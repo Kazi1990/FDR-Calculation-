@@ -1,0 +1,70 @@
+import openpyxl
+from openpyxl.styles import Font
+import os
+
+def calculate_fdr():
+    print("📅 Fixed Deposit Return Calculator (Month-wise)\n")
+
+    # Inputs
+    principal = float(input("Enter the Principal Amount (৳): "))
+    annual_rate = float(input("Enter Annual Interest Rate (%): "))
+    months = int(input("Enter Duration in Months: "))
+    tax_rate = float(input("Enter Tax Deduction Rate (TDS %) on Interest: "))
+    excise_duty = float(input("Enter Excise Duty (৳): "))
+
+    monthly_rate = annual_rate / 12
+    total_interest = 0
+
+    # Excel setup
+    workbook = openpyxl.Workbook()
+    sheet = workbook.active
+    sheet.title = "FDR Summary"
+
+    # Excel headers
+    headers = ["Month", "Gross Interest (৳)", "Tax Deducted (৳)", "Net Interest (৳)"]
+    sheet.append(headers)
+    for col in range(1, 5):
+        sheet.cell(row=1, column=col).font = Font(bold=True)
+
+    # Month-wise calculation
+    for month in range(1, months + 1):
+        monthly_interest = (principal * monthly_rate) / 100
+        tax = (monthly_interest * tax_rate) / 100
+        interest_after_tax = monthly_interest - tax
+        total_interest += interest_after_tax
+
+        # Print on screen
+        print(f"Month {month}: Gross = ৳{monthly_interest:.2f}, Tax = ৳{tax:.2f}, Net = ৳{interest_after_tax:.2f}")
+
+        # Save to Excel
+        sheet.append([
+            month,
+            round(monthly_interest, 2),
+            round(tax, 2),
+            round(interest_after_tax, 2)
+        ])
+
+    # Summary
+    final_amount = principal + total_interest - excise_duty
+    sheet.append([])
+    sheet.append(["", "Total Net Interest", "", round(total_interest, 2)])
+    sheet.append(["", "Excise Duty", "", round(excise_duty, 2)])
+    sheet.append(["", "Final Amount", "", round(final_amount, 2)])
+
+    # File save path
+    filename = "fdr_summary.xlsx"
+    filepath = os.path.join("/sdcard/Download", filename)
+
+    try:
+        workbook.save(filepath)
+        print(f"\n✅ Excel saved at: {filepath}")
+    except Exception as e:
+        print(f"❌ Failed to save Excel: {e}")
+
+    # Final result
+    print("\n📊 Final Summary:")
+    print(f"Total Net Interest: ৳{total_interest:.2f}")
+    print(f"Final Return (After Duty): ৳{final_amount:.2f}")
+
+# Run it
+calculate_fdr()
